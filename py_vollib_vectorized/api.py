@@ -215,13 +215,12 @@ def get_all_greeks(flag, S, K, t, r, sigma, q=None, *,  model="black_scholes", r
     _validate_data(flag, S, K, t, r, sigma)
 
     if model == "black":
-        b = r - r
         greeks = {
-            "delta": numerical_delta_black_scholes(flag, S, K, t, r, sigma, b),
-            "gamma": numerical_gamma_black_scholes(flag, S, K, t, r, sigma, b),
-            "theta": numerical_theta_black_scholes(flag, S, K, t, r, sigma, b),
-            "rho": numerical_rho_black_scholes(flag, S, K, t, r, sigma, b),
-            "vega": numerical_vega_black_scholes(flag, S, K, t, r, sigma, b)
+            "delta": numerical_delta_black(flag, S, K, t, r, sigma),
+            "gamma": numerical_gamma_black(flag, S, K, t, r, sigma),
+            "theta": numerical_theta_black(flag, S, K, t, r, sigma),
+            "rho": numerical_rho_black(flag, S, K, t, r, sigma),
+            "vega": numerical_vega_black(flag, S, K, t, r, sigma)
         }
     elif model == "black_scholes":
         b = r

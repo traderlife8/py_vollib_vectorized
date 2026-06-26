@@ -1,7 +1,7 @@
 import numpy as np
 
 from py_vollib_vectorized.util.jit_helper import maybe_jit
-from ._model_calls import black, black_scholes, black_scholes_merton
+from ._model_calls import black, black_scholes, black_scholes_merton, discounted_black
 
 dS = .01
 
@@ -28,7 +28,7 @@ def numerical_delta_black(flags, Fs, Ks, ts, rs, sigmas):
                 if flag < 0:  # put option
                     delta = -1.0
         else:
-            delta = (black(F+dS, K, sigma, t, flag) - black(F - dS, K, sigma, t, flag)) / (
+            delta = (discounted_black(F+dS, K, sigma, t, r, flag) - discounted_black(F - dS, K, sigma, t, r, flag)) / (
                     2 * dS)
         deltas.append(delta)
     return deltas
@@ -39,9 +39,9 @@ def numerical_theta_black(flags, Fs, Ks, ts, rs, sigmas):
     thetas = []
     for flag, F, K, t, r, sigma in zip(flags, Fs, Ks, ts, rs, sigmas):
         if t <= 1. / 365.:
-            theta = black(F, K, sigma, 0.00001, flag) - black(F, K, sigma, t, flag)
+            theta = discounted_black(F, K, sigma, 0.00001, r, flag) - discounted_black(F, K, sigma, t, r, flag)
         else:
-            theta = black(F, K, sigma, t - 1./365., flag) - black(F, K, sigma, t, flag)
+            theta = discounted_black(F, K, sigma, t - 1./365., r, flag) - discounted_black(F, K, sigma, t, r, flag)
         thetas.append(theta)
     return thetas
 
@@ -51,7 +51,7 @@ def numerical_vega_black(flags, Fs, Ks, ts, rs, sigmas):
     vegas = []
 
     for flag, F, K, t, r, sigma in zip(flags, Fs, Ks, ts, rs, sigmas):
-        vega = (black(F, K, sigma + 0.01, t, flag) - black(F, K, sigma - 0.01, t, flag)) / 2.
+        vega = (discounted_black(F, K, sigma + 0.01, t, r, flag) - discounted_black(F, K, sigma - 0.01, t, r, flag)) / 2.
         vegas.append(vega)
     return vegas
 
@@ -61,8 +61,10 @@ def numerical_rho_black(flags, Fs, Ks, ts, rs, sigmas):
     rhos = []
 
     for flag, F, K, t, r, sigma in zip(flags, Fs, Ks, ts, rs, sigmas):
-        black(F, K, sigma. t, flag)
-        rho = (black(flag, F, K, t, r + 0.01, sigma) - black(flag, F, K, t, r - 0.01, sigma)) / 2.
+        # black() 不含 r 参数，rho 通过 deflater = exp(-r*t) 体现
+        undiscounted = black(F, K, sigma, t, flag)
+        rho = (undiscounted * np.exp(-(r + 0.01) * t) -
+               undiscounted * np.exp(-(r - 0.01) * t)) / 2.
         rhos.append(rho)
 
     return rhos
@@ -76,8 +78,8 @@ def numerical_gamma_black(flags, Fs, Ks, ts, rs, sigmas):
         if t == 0:
             gamma = np.inf if F == K else 0.0
         else:
-            gamma = (black(flag, F + dS, K, t, r, sigma) - 2. * black(flag, F, K, t, r, sigma) + \
-                     black(flag, F - dS, K, t, r, sigma)) / dS ** 2.
+            gamma = (discounted_black(F + dS, K, sigma, t, r, flag) - 2. * discounted_black(F, K, sigma, t, r, flag) + \
+                     discounted_black(F - dS, K, sigma, t, r, flag)) / dS ** 2.
 
         gammas.append(gamma)
     return gammas
@@ -226,10 +228,10 @@ def numerical_rho_black_scholes_merton(flags, Ss, Ks, ts, rs, sigmas, bs):
     rhos = []
 
     for flag, S, K, t, r, sigma, b in zip(flags, Ss, Ks, ts, rs, sigmas, bs):
-        rho = (black_scholes_merton(flag, S, K, t, r + 0.01, sigma, r - b + 0.01) - black_scholes_merton(flag, S, K, t,
-                                                                                                         r - 0.01,
-                                                                                                         sigma,
-                                                                                                         r - b - 0.01)) / 2.
+        rho = (black_scholes_merton(flag, S, K, t, r + 0.01, sigma, r - b) - black_scholes_merton(flag, S, K, t,
+                                                                                                   r - 0.01,
+                                                                                                   sigma,
+                                                                                                   r - b)) / 2.
         rhos.append(rho)
 
     return rhos

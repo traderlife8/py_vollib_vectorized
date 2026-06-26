@@ -79,6 +79,12 @@ def black(F, K, sigma, T, q):
 
 
 @maybe_jit()
+def discounted_black(F, K, sigma, t, r, flag):
+    """含 deflater 的 Black 定价，与 py_vollib.black.black() 对齐"""
+    return black(F, K, sigma, t, flag) * np.exp(-r * t)
+
+
+@maybe_jit()
 def _black_scholes_vectorized_call(flags, Ss, Ks, ts, rs, sigmas):
     prices = []
     for q, S, K, t, r, sigma in zip(flags, Ss, Ks, ts, rs, sigmas):
