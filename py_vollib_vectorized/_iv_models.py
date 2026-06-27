@@ -25,7 +25,8 @@ def implied_volatility_from_a_transformed_rational_guess(price, F, K, T, q):
 def implied_volatility_from_a_transformed_rational_guess_with_limited_iterations(
         prices, Fs, strikes, ttes, qs, N
 ):
-    ivs = []
+    n = len(strikes)
+    ivs = np.empty(n)
     for idx, (K, F, q, price, T) in enumerate(zip(strikes, Fs, qs, prices, ttes)):
         intrinsic = np.abs(max(K - F if q < 0 else F - K, 0.0))
 
@@ -40,7 +41,7 @@ def implied_volatility_from_a_transformed_rational_guess_with_limited_iterations
         ) / np.sqrt(
             T
         )
-        ivs.append(iv)
+        ivs[idx] = iv
     return ivs
 
 
