@@ -14,12 +14,23 @@ These speedups make `py_vollib_vectorized` the fastest library for pricing optio
 
 See the [documentation](https://py-vollib-vectorized.readthedocs.io/en/latest) for more details.
 
+Don't run `pip install py_vollib_vectorized`! that is install https://github.com/marcdemers/py_vollib_vectorized
+
 ## Installation
 
     pip install git+https://github.com/traderlife8/py_vollib_vectorized.git
-    
-    Don't run `pip install py_vollib_vectorized`! that is install https://github.com/marcdemers/py_vollib_vectorized
-    
+
+## Use in code
+
+    try:
+        import py_vollib_vectorized as pvv
+    except ImportError:
+        import subprocess, sys
+        subprocess.check_call(
+            [sys.executable, '-m', 'pip', 'install', 'git+https://github.com/traderlife8/py_vollib_vectorized.git']
+        )
+        import py_vollib_vectorized as pvv
+
 ## Requirements
 
 * Written for Python 3.5+
