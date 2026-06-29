@@ -16,7 +16,9 @@ See the [documentation](https://py-vollib-vectorized.readthedocs.io/en/latest) f
 
 ## Installation
 
-    pip install py_vollib_vectorized
+    pip install git+https://github.com/traderlife8/py_vollib_vectorized.git
+    
+    Don't run `pip install py_vollib_vectorized`! that is install https://github.com/marcdemers/py_vollib_vectorized
     
 ## Requirements
 
